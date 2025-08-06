@@ -1,1 +1,1 @@
-This is a small repo to contain bare copies of ConKer and the various versions with changes I have made for my specific uses.S
+This is a small repo to contain bare copies of ConKer and the various versions with changes I have made for my specific uses
