@@ -37,7 +37,7 @@ class DivideScheme:
     # TODO -> Add hard check that boxes do not stretch beyond spherical limits
     
     
-    def __init__(self, rand_file: str, cfg_file: str, verbose: bool, rand_file2=None):
+    def __init__(self, rand_file: str, cfg_file: str, verbose: bool, rand_file2=None, zrange=None):
         # Reads in a randoms file and parameters
         # Sets up print statements
         # Accounts for timing
@@ -65,6 +65,11 @@ class DivideScheme:
         with fits.open('./data/'+rand_file) as f:
             rand = f[1].data
             rand_cols = f[1].columns
+            if zrange is not None:
+                mask = (rand['z']>=zrange[0])&(rand['z']<=zrange[1])
+                hdu = fits.BinTableHDU(data=rand[mask])
+                rand = hdu.data
+                rand_cols = hdu.columns
 
         if rand_file2 == None:
             self.rand = rand
@@ -72,6 +77,10 @@ class DivideScheme:
         else:
             with fits.open('./data/'+rand_file2) as f:
                 rand2 = f[1].data
+                if zrange is not None:
+                    mask2 = (rand2['z']>=zrange[0])&(rand2['z']<=zrange[1])
+                    rand2 = rand2[mask2]
+                    
             nrows1 = rand.shape[0]
             nrows = nrows1 + rand2.shape[0]
             hdu = fits.BinTableHDU.from_columns(rand_cols, nrows=nrows)
@@ -407,7 +416,7 @@ class DivideScheme:
                 
 def DivideCatalog(rand_file: str, cfg_file: str, save_plan: bool,
                   plot_results: bool, save_plot: bool, verbose: bool, theta_user = None,
-                  rand_file2 = None):
+                  rand_file2 = None, zrange=None):
     # A function to run the divide plan routines with a user defined set of 
     #   parameters. Opttional params for saving, plotting, etc.
     
@@ -415,7 +424,8 @@ def DivideCatalog(rand_file: str, cfg_file: str, save_plan: bool,
     divp = DivideScheme(rand_file=rand_file,
                         cfg_file=cfg_file,
                         verbose=verbose,
-                        rand_file2=rand_file2)
+                        rand_file2=rand_file2,
+                        zrange=zrange)
     
     # Run the partition scheme and decide what to do with the result
     divp.partitionCatalog(save_plan=save_plan,
